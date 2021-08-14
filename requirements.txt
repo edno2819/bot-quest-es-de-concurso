@@ -1,0 +1,6 @@
+webdrivermanager==0.10.0
+auto-py-to-exe
+selenium==3.141.0
+pandas==1.2.5
+openpyxl
+openpyxl
