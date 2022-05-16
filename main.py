@@ -1,68 +1,88 @@
-from to_excel import ToExcel
-from tecconcursos import QuestionPage
-from utils import *
+from libries.PagesTecConcursos import QuestionPage
+from libries.utils import *
+import configparser
+import csv
+import time
+import logging
 import traceback
-from time import sleep
 
-CONFIGS = consult_csv()
-CONFIGS['QTD_ITENS'] = int(CONFIGS['QTD_ITENS'][0]) if CONFIGS['QTD_ITENS'][0]!='' else 999
+
+
+
+CONFIGS = configparser.ConfigParser()
+CONFIGS.read('configs.ini')
+DIVISOR = '/' if CONFIGS['login']['SO']=='LINUX' else '\\'
 
 class Main:
-    PATH = 'Questões'
-
     def __init__(self) -> None:
-        self.site = QuestionPage()
-        self.to_excel = ToExcel()
+        self.site = QuestionPage(profiles=True)
+        self.log = logging.getLogger(__name__)
+        self.log.debug("MainOperation started")
+
     
     def start(self):
         self.site.start()
-        self.site.login(CONFIGS['LOGIN'][0], CONFIGS['SENHA'][0])
-        self.site.caderno_de_questoes(CONFIGS['URL'][0])
+    
+    def loginManual(self):
+        self.site.start()
             
     def scrap_quest(self):
-        self.to_excel.create()
-        for item in range(1, CONFIGS['QTD_ITENS']+1):
+        self.site.caderno_de_questoes(self.link)
+        for n in range(0, self.pages):
             try:
-                img_path = f'{self.path_screans}\\{item}.png'
-                questao = self.site.infos(img_path)
-                questao['Id'] = item
+                infos = self.site.infos()
+                question_row = self.formatInfos(infos)
+                self.rows_infos.append(question_row)
                 self.site.next_page()
-                self.to_excel.add_in_df([questao])
-                self.to_excel.to_excel(self.path_scraps)
+                time.sleep(2)
+            except Exception as e:
+                self.log.info(f"Erro na extração da questão N: {n}: {traceback.format_exc()}")
+                print(f'Erro na extração da questão N: {n}\n {e}') 
 
-            except Exception: 
-                pass
-                #print(f'{item}')
-                # traceback.print_exc()
+    def formatInfos(self, infos):
+        question = self.formatString(infos['question'])
+        response = self.formatString(infos['response'] + '<hr>' + infos['comment'])
+        return f'{question};{response}'
+
+
+    def formatString(self, string):
+        return string.replace(';', ',').replace('\n', '<br>')
+
+
+    def salveCsv(self):
+        with open(self.path_scraps, 'w', encoding='UTF8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows([c.strip() for c in r.split(',')] for r in self.rows_infos)
+            f.close()
+
 
     def close(self):
-        self.site.driver.driver.close()
+        self.site.driver.close()
     
-    def set_enviroment(self, categoria):
-        path_cats="\\".join(categoria)
-        self.path = f'{self.PATH}\\{path_cats}\\{time_now("%H_%M %D").replace("/", "_")}'
-        self.path_scraps = f'{self.path}\\questões.xlsx'
-        self.path_screans = f'{self.path}\\Imagens'
+    def set_enviroment(self):
+        self.path = f'Questoes'
+        self.path_scraps = f'{self.path}{DIVISOR}{time_now("%H_%M %D").replace("/", "_")}.csv'
         set_folder(self.path)
-        set_folder(self.path_screans)
+        set_folder('logs')
+
         
-    def run(self):
+    def run(self, link, pages):
+        self.link = link
+        self.pages = pages
+        print(f'\n{time_now("%H:%M:%S")} Iniciando buscas!')
+        self.rows_infos = []
         self.start()
-        self.set_enviroment(['Questões'])
+        self.set_enviroment()
         self.scrap_quest()
+        self.salveCsv()
         self.close()
-        return True
+        print(f'{time_now("%H:%M:%S")} Busca finalizada!')
+        print(f'\nArquivo de saída: \n{self.path_scraps}')
 
 
-bot = Main()
 
-try: 
-    print(f'\n{time_now("%H:%M:%S")} Iniciando buscas!')
-    bot.run()
-    print(f'{time_now("%H:%M:%S")} Busca finalizada!')
 
-except Exception:
-    print('\nError! Mostre para o desenvolvedor.\n')
-    traceback.print_exc()    
-    
-input()
+# bot = Main()
+# bot.run()
+# print(f'{time_now("%H:%M:%S")} Busca finalizada!')
+
