@@ -1,5 +1,6 @@
 *__pycache__*
 venv
 profile
-logs
+logs/*
 Questoes
+.vscode

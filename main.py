@@ -1,17 +1,12 @@
 from libries.PagesTecConcursos import QuestionPage
 from libries.utils import *
-import configparser
 import csv
 import time
 import logging
 import traceback
+import platform
 
-
-
-
-CONFIGS = configparser.ConfigParser()
-CONFIGS.read('configs.ini')
-DIVISOR = '/' if CONFIGS['login']['SO']=='LINUX' else '\\'
+DIVISOR = '/' if platform.system()=='Linux' else '\\'
 
 class Main:
     def __init__(self) -> None:
@@ -81,8 +76,8 @@ class Main:
 
 
 
-
-# bot = Main()
-# bot.run()
-# print(f'{time_now("%H:%M:%S")} Busca finalizada!')
+if __name__ == '__main__':
+    bot = Main()
+    bot.run()
+    print(f'{time_now("%H:%M:%S")} Busca finalizada!')
 
