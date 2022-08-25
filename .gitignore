@@ -1,6 +1,6 @@
 *__pycache__*
 venv
-profile
+profile/*
 logs/*
-Questoes
+Questoes/*
 .vscode

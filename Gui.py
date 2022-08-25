@@ -15,7 +15,7 @@ layout=[
     [sg.Text('Link do Caderno de Questões:', size=(25,1), font=("Helvetica", 14))],
     [sg.In(size=(45,2), key=("link"))],
     [sg.Text('Quantiade de Questões:', size=(20, 0), font=("Helvetica", 14)), sg.In(size=(8,1), key=("pages"), default_text='50')],
-    [sg.Radio('SHOW', "RADIO1", default=True, key=("task")), sg.Radio('OFF', "RADIO1", key=("task"))],
+    # [sg.Radio('SHOW', "RADIO1", default=True, key=("task")), sg.Radio('OFF', "RADIO1", key=("task"))],
     [sg.Text('', size=(7,0))], 
     [sg.Text('Finalizado!', size=(30,1), font=("Helvetica", 15),  visible=False, key='-CBOX-')], 
     [sg.Text('', size=(7,0))], 
